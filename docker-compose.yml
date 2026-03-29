@@ -1,0 +1,12 @@
+services:
+  nextjs:
+    container_name: nohope-nextjs
+    build:
+      context: ./nohope
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./nohope/.env
+    environment:
+      NODE_ENV: production

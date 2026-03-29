@@ -21,6 +21,7 @@ export async function POST() {
 
     return response;
   } catch (error) {
+    console.error(error);
     return NextResponse.json(
       { message: "Có lỗi xảy ra khi đăng xuất" },
       { status: 500 },

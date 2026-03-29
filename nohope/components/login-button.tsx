@@ -32,9 +32,10 @@ export function LoginButton() {
 
       const data = await res.json();
       if (data.success) {
-        if (data.data.role === "ADMIN") router.push("/admin/dashboard");
-        else router.push("/");
+        if (data.data.role === "ADMIN") router.replace("/admin/dashboard");
+        else router.replace("/");
       }
+      router.refresh();
       return toast.success("Xác thực thành công");
     } catch (err) {
       console.error("Lỗi xác thực:", err);

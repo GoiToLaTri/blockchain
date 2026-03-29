@@ -18,12 +18,11 @@ export default function SecurityLayout({
         await fetch("/api/auth/logout", { method: "POST" });
 
         toast.success("Đăng xuất thành công");
-
         router.replace("/login");
       }, 0);
 
       return () => clearTimeout(id);
     }
-  }, [isConnected, isReconnecting]);
+  }, [isConnected, isReconnecting, router]);
   return <div>{children}</div>;
 }

@@ -60,8 +60,8 @@ export default function CustomConnectButton() {
                     {/* Chain */}
                     <Button
                       onClick={openChainModal}
-                      variant="outline"
-                      className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border-white/10 text-white backdrop-blur-md"
+                      variant="ghost"
+                      className="flex items-center gap-2 bg-[#fd79a8] hover:bg-[#e84393] text-black backdrop-blur-md"
                     >
                       {chain.hasIcon && (
                         <div
@@ -88,16 +88,16 @@ export default function CustomConnectButton() {
                       variant="outline"
                       className="
         flex-1 justify-start
-        bg-white/10 hover:bg-white/20
+        bg-[#a29bfe] hover:bg-[#6c5ce7]
         border-white/10
-        text-white
+        text-black
         backdrop-blur-md
       "
                     >
                       <span className="font-medium">{account.displayName}</span>
 
                       {account.displayBalance && (
-                        <span className="ml-2 text-gray-400">
+                        <span className="ml-2 text-gray-600">
                           {account.displayBalance}
                         </span>
                       )}
