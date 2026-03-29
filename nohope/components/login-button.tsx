@@ -31,7 +31,6 @@ export function LoginButton() {
       });
 
       const data = await res.json();
-      console.log(":::: data", data);
       if (data.success) {
         if (data.data.role === "ADMIN") router.push("/admin/dashboard");
         else router.push("/");

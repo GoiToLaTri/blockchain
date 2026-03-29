@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { NextResponse } from "next/server";
 import { ContractService } from "@/lib/contract";
 import { UserService } from "@/services/user.service";
+import { signToken } from "@/lib/token";
 
 export async function POST(req: Request) {
   try {
@@ -10,8 +11,6 @@ export async function POST(req: Request) {
     const { address, message, signature } = await req.json();
 
     const recoveredAddress = ethers.verifyMessage(message, signature);
-
-    console.log("Recovered:", recoveredAddress);
 
     if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
       return NextResponse.json(
@@ -30,12 +29,29 @@ export async function POST(req: Request) {
       role: isAdmin ? "ADMIN" : "STUDENT",
     });
 
-    return NextResponse.json({
+    const now = Math.floor(Date.now() / 1000); // thời gian hiện tại tính bằng giây
+    const token = signToken({
+      iss: "nohope",
+      sub: address,
+      scopes: user.role,
+      exp: now + 24 * 60 * 60,
+    });
+
+    const response = NextResponse.json({
       success: true,
       message: "Xác thực thành công",
       address: recoveredAddress,
       data: user,
     });
+
+    response.cookies.set("access_token", token, {
+      httpOnly: true, // Bảo mật: không cho JS truy cập
+      secure: false, // Chỉ gửi qua HTTPS
+      maxAge: 60 * 60 * 24, // Hết hạn sau 1 ngày (tính bằng giây)
+      path: "/",
+    });
+
+    return response;
 
     // return NextResponse.json(
     //   { success: false, message: "Chữ ký không hợp lệ" },
