@@ -19,6 +19,7 @@ export default function SecurityLayout({
 
         toast.success("Đăng xuất thành công");
         router.replace("/");
+        router.refresh();
       }, 0);
 
       return () => clearTimeout(id);

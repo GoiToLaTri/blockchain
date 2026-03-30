@@ -19,10 +19,13 @@ import {
   TableCell,
   Table,
 } from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { ExternalLink, UsersRound } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function IssuersPage() {
+  const [loading, setLoading] = useState(false);
   const fetchIssuers = async () => {
     const res = await fetch("/api/eth/issuers/all", {
       cache: "no-store",
@@ -36,9 +39,36 @@ export default function IssuersPage() {
     queryFn: fetchIssuers,
   });
 
+  const removeIssuerMutation = useMutation({
+    mutationFn: async (issuerAddr: string) => {
+      setLoading(true);
+
+      const res = await fetch("/api/eth/issuers/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ issuerAddr }),
+      });
+      if (!res.ok) throw new Error("Remove failed");
+      setLoading(false);
+
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Khóa thành công");
+      refetch();
+    },
+    onError: () => {
+      toast.error("Có lỗi xảy ra");
+    },
+  });
+
   const issuers = data?.issuers || [];
   const refetchData = async () => {
     await refetch();
+  };
+
+  const handleRemoveIssuer = (issuerAddr: string) => {
+    removeIssuerMutation.mutate(issuerAddr);
   };
 
   return (
@@ -107,7 +137,9 @@ export default function IssuersPage() {
                       {/* Trạng thái */}
                       <TableCell>
                         <Badge
-                          variant={issuer.isActive ? "secondary" : "destructive"}
+                          variant={
+                            issuer.isActive ? "secondary" : "destructive"
+                          }
                         >
                           {issuer.isActive ? "Hoạt động" : "Bị khóa"}
                         </Badge>
@@ -128,10 +160,11 @@ export default function IssuersPage() {
 
                       <TableCell className="text-right">
                         <Button
+                          onClick={() => handleRemoveIssuer(issuer.address)}
                           disabled={!issuer.isActive}
                           variant="destructive"
                         >
-                          Chặn
+                          Khóa
                         </Button>
                       </TableCell>
                     </TableRow>
