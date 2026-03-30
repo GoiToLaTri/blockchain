@@ -13,7 +13,10 @@ export class AdminService {
     const { address } = addIssuerDTO;
     await Mongo.connect();
     const existingIssuer = await Issuer.findOne({ address });
-    if (existingIssuer) return existingIssuer;
+    if (existingIssuer) {
+      Issuer.updateOne({ address }, { isActive: true });
+      return existingIssuer;
+    }
 
     const user = await User.findOne({ address });
     if (user) await User.updateOne({ address }, { role: "ISSUER" });
@@ -26,5 +29,10 @@ export class AdminService {
   async allIssuers() {
     await Mongo.connect();
     return await Issuer.find();
+  }
+
+  async removeIssuer(address: string) {
+    await Mongo.connect();
+    return await Issuer.updateOne({ address }, { isActive: false });
   }
 }

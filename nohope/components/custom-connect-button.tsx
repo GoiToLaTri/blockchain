@@ -3,6 +3,7 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "./ui/button";
 import { Lock } from "lucide-react";
+
 export default function CustomConnectButton() {
   return (
     <ConnectButton.Custom>

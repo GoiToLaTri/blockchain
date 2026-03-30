@@ -1,7 +1,4 @@
-import {
-  ITransactionHistory,
-  TransactionHistory,
-} from "@/model/transaction-history.model";
+import { TransactionHistory } from "@/model/transaction-history.model";
 import Mongo from "../database/connect";
 
 export interface createTransactionHistoryDTO {
