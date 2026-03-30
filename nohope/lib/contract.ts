@@ -30,6 +30,16 @@ export interface VerifyResult {
   isRevoked: boolean;
 }
 
+export interface CertificateHashInput {
+  studentName: string;
+  studentAddress: string;
+  certificateType: string;
+  specialization?: string | null;
+  gpa?: number | null;
+  graduationDate?: string | null;
+  issuerAddress: string;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  ContractService
 // ─────────────────────────────────────────────────────────────────────────────
@@ -466,6 +476,27 @@ export class ContractService {
       ],
     );
     return ethers.keccak256(encoded);
+  }
+
+  /**
+   * [LOCAL – pure, không cần mạng]
+   * Tính hash cho toàn bộ metadata văn bằng theo payload canonical JSON.
+   *
+   * @param input  Metadata văn bằng đã chuẩn hóa.
+   * @returns      certHash dưới dạng hex string "0x...".
+   */
+  static computeCertificateHashOffchain(input: CertificateHashInput): string {
+    const normalized = {
+      studentName: input.studentName.trim(),
+      studentAddress: ethers.getAddress(input.studentAddress),
+      certificateType: input.certificateType.trim(),
+      specialization: input.specialization?.trim() || null,
+      gpa: input.gpa ?? null,
+      graduationDate: input.graduationDate?.trim() || null,
+      issuerAddress: ethers.getAddress(input.issuerAddress),
+    };
+
+    return ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(normalized)));
   }
 
   // ───────────────────────────────────────────────────────────────────────────

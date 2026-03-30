@@ -25,16 +25,16 @@ import { History, Search, ShieldCheck } from "lucide-react";
 
 type CertificateRecord = {
   _id: string;
+  certHash: string;
+  studentName: string;
+  certificateType: string;
+  studentAddress?: string;
+  ipfsCID?: string;
   txHash: string;
-  action: string;
-  status: string;
+  isRevoked: boolean;
+  revokedAt?: string | null;
+  revokedTxHash?: string | null;
   createdAt: string;
-  metadata?: {
-    studentName?: string;
-    certificateType?: string;
-    certHash?: string;
-    ipfsCID?: string;
-  };
 };
 
 export function CertificateHistory({
@@ -66,7 +66,10 @@ export function CertificateHistory({
       }
 
       return keyword.trim()
-        ? { certificates: data.certificates, pagination: { total: data.certificates?.length || 0 } }
+        ? {
+            certificates: data.certificates,
+            pagination: { total: data.certificates?.length || 0 },
+          }
         : data;
     },
   });
@@ -148,15 +151,15 @@ export function CertificateHistory({
               </TableHeader>
               <TableBody>
                 {certificates.map((record) => {
-                  const certHash = record.metadata?.certHash || record.txHash;
-                  const isRevoked = record.action === "REVOKE_CERTIFICATE" || record.status === "FAILED";
+                  const certHash = record.certHash || record.txHash;
+                  const isRevoked = Boolean(record.isRevoked);
 
                   return (
                     <TableRow key={record._id}>
                       <TableCell className="font-medium">
-                        {record.metadata?.studentName || "Không có dữ liệu"}
+                        {record.studentName || "Không có dữ liệu"}
                       </TableCell>
-                      <TableCell>{record.metadata?.certificateType || "-"}</TableCell>
+                      <TableCell>{record.certificateType || "-"}</TableCell>
                       <TableCell>
                         <Badge variant={isRevoked ? "destructive" : "secondary"}>
                           {isRevoked ? "Đã thu hồi" : "Hợp lệ"}
@@ -187,7 +190,7 @@ export function CertificateHistory({
                 {!certificates.length && (
                   <TableRow>
                     <TableCell colSpan={hideRevokeAction ? 5 : 6} className="py-10 text-center text-muted-foreground">
-                      Chưa có dữ liệu phát hành.
+                      Chưa có dữ liệu chứng chỉ.
                     </TableCell>
                   </TableRow>
                 )}

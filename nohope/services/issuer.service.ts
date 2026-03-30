@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import Mongo from "../database/connect";
-import { ContractService } from "@/lib/contract";
+import { ContractService, CertificateHashInput } from "@/lib/contract";
+import { Certificate } from "@/model/certificate.model";
 import { TransactionHistory } from "@/model/transaction-history.model";
 
 export interface IssueCertificateDTO {
@@ -35,22 +36,29 @@ export class IssuerService {
 
     const studentAddress = dto.studentAddress.toLowerCase();
     const issuerAddress = dto.issuerAddress.toLowerCase();
+    const graduationDate = dto.graduationDate || null;
+    const graduationYear = graduationDate
+      ? new Date(graduationDate).getFullYear()
+      : null;
+    const gpaScaled = dto.gpa === undefined || dto.gpa === null ? null : Math.round(dto.gpa * 100);
 
     const isActiveIssuer = await this.contractService.verifyIssuer(
       issuerAddress,
     );
     if (!isActiveIssuer) throw new Error("Issuer is not active on-chain");
 
-    const graduationYear = dto.graduationDate
-      ? new Date(dto.graduationDate).getFullYear()
-      : new Date().getFullYear();
-    const gpaScaled = Math.round((dto.gpa ?? 0) * 100);
-    const certHash = ContractService.computeCertHashOffchain(
-      dto.studentName,
-      dto.certificateType,
-      graduationYear,
-      gpaScaled,
+    const certificateHashInput: CertificateHashInput = {
+      studentName: dto.studentName,
       studentAddress,
+      certificateType: dto.certificateType,
+      specialization: dto.specialization || null,
+      gpa: gpaScaled,
+      graduationDate,
+      issuerAddress,
+    };
+
+    const certHash = ContractService.computeCertificateHashOffchain(
+      certificateHashInput,
     );
 
     const payload = {
@@ -58,8 +66,8 @@ export class IssuerService {
       studentAddress,
       certificateType: dto.certificateType,
       specialization: dto.specialization || null,
-      gpa: dto.gpa ?? null,
-      graduationDate: dto.graduationDate || null,
+      gpa: gpaScaled,
+      graduationDate,
       graduationYear,
       issuerAddress,
     };
@@ -88,10 +96,35 @@ export class IssuerService {
       createdAt: new Date(),
     });
 
+    const certificate = await Certificate.findOneAndUpdate(
+      { certHash },
+      {
+        $set: {
+          certHash,
+          studentAddress,
+          issuerAddress,
+          studentName: dto.studentName,
+          certificateType: dto.certificateType,
+          specialization: dto.specialization || null,
+          gpa: gpaScaled,
+          graduationDate,
+          graduationYear,
+          ipfsCID,
+          txHash: receipt.hash,
+          isRevoked: false,
+          revokedAt: null,
+          revokedTxHash: null,
+          revokedBy: null,
+        },
+      },
+      { upsert: true, new: true },
+    );
+
     return {
       transactionHash: receipt.hash,
       certHash,
       ipfsCID,
+      certificate,
       record,
     };
   }
@@ -99,27 +132,45 @@ export class IssuerService {
   async revokeCertificate(certHash: string, issuerAddress: string) {
     await Mongo.connect();
 
-    const issued = await TransactionHistory.findOne({
-      action: "ISSUE_CERTIFICATE",
-      "metadata.certHash": certHash,
-    });
+    const normalizedIssuerAddress = issuerAddress.toLowerCase();
+    const issued = await Certificate.findOne({ certHash });
 
     if (!issued) throw new Error("Certificate not found in database");
 
+    if (issued.issuerAddress !== normalizedIssuerAddress) {
+      throw new Error("Issuer is not allowed to revoke this certificate");
+    }
+
+    if (issued.isRevoked) {
+      throw new Error("Certificate is already revoked");
+    }
+
+    const isActiveIssuer = await this.contractService.verifyIssuer(
+      normalizedIssuerAddress,
+    );
+    if (!isActiveIssuer) throw new Error("Issuer is not active on-chain");
+
     const receipt = await this.contractService.revokeCertificate(certHash);
+    issued.isRevoked = true;
+    issued.revokedAt = new Date();
+    issued.revokedTxHash = receipt.hash;
+    issued.revokedBy = normalizedIssuerAddress;
+    await issued.save();
+
     const record = await TransactionHistory.create({
       txHash: receipt.hash,
       action: "REVOKE_CERTIFICATE",
       fromAddress: receipt.from.toLowerCase(),
-      targetAddress: issued.targetAddress,
+      targetAddress: issued.studentAddress,
       blockNumber: receipt.blockNumber,
       status: receipt.status === 1 ? "SUCCESS" : "FAILED",
       gasUsed: receipt.gasUsed?.toString(),
       metadata: {
         certHash,
-        issuerAddress: issuerAddress.toLowerCase(),
+        issuerAddress: normalizedIssuerAddress,
         revokedFromTx: issued.txHash,
-        studentName: issued.metadata?.studentName || null,
+        studentName: issued.studentName,
+        certificateType: issued.certificateType,
         revokedAt: new Date().toISOString(),
       },
       createdAt: new Date(),
@@ -135,12 +186,11 @@ export class IssuerService {
     await Mongo.connect();
 
     const query = {
-      fromAddress: issuerAddress.toLowerCase(),
-      action: { $in: ["ISSUE_CERTIFICATE", "REVOKE_CERTIFICATE"] },
+      issuerAddress: issuerAddress.toLowerCase(),
     };
 
-    const total = await TransactionHistory.countDocuments(query);
-    const certificates = await TransactionHistory.find(query)
+    const total = await Certificate.countDocuments(query);
+    const certificates = await Certificate.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -155,13 +205,14 @@ export class IssuerService {
   async searchCertificates(issuerAddress: string, keyword: string) {
     await Mongo.connect();
 
-    return await TransactionHistory.find({
-      fromAddress: issuerAddress.toLowerCase(),
-      action: { $in: ["ISSUE_CERTIFICATE", "REVOKE_CERTIFICATE"] },
+    return await Certificate.find({
+      issuerAddress: issuerAddress.toLowerCase(),
       $or: [
-        { "metadata.studentName": { $regex: keyword, $options: "i" } },
-        { "metadata.certificateType": { $regex: keyword, $options: "i" } },
-        { "metadata.certHash": { $regex: keyword, $options: "i" } },
+        { studentName: { $regex: keyword, $options: "i" } },
+        { certificateType: { $regex: keyword, $options: "i" } },
+        { certHash: { $regex: keyword, $options: "i" } },
+        { studentAddress: { $regex: keyword, $options: "i" } },
+        { ipfsCID: { $regex: keyword, $options: "i" } },
       ],
     })
       .sort({ createdAt: -1 })
@@ -173,15 +224,12 @@ export class IssuerService {
     await Mongo.connect();
 
     const fromAddress = issuerAddress.toLowerCase();
-    const totalIssued = await TransactionHistory.countDocuments({
-      fromAddress,
-      action: "ISSUE_CERTIFICATE",
-      status: "SUCCESS",
+    const totalIssued = await Certificate.countDocuments({
+      issuerAddress: fromAddress,
     });
-    const totalRevoked = await TransactionHistory.countDocuments({
-      fromAddress,
-      action: "REVOKE_CERTIFICATE",
-      status: "SUCCESS",
+    const totalRevoked = await Certificate.countDocuments({
+      issuerAddress: fromAddress,
+      isRevoked: true,
     });
 
     return {

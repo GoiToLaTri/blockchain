@@ -15,9 +15,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Calendar } from "@/components/ui/calendar";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type IssueCertificateProps = {
   onIssued?: () => void;
@@ -29,7 +33,7 @@ type IssueFormState = {
   certificateType: string;
   specialization: string;
   gpa: string;
-  graduationDate: string;
+  graduationDate?: Date;
 };
 
 const initialFormState: IssueFormState = {
@@ -38,7 +42,7 @@ const initialFormState: IssueFormState = {
   certificateType: "Bachelor of Information Technology",
   specialization: "",
   gpa: "",
-  graduationDate: "",
+  graduationDate: undefined,
 };
 
 export function IssueCertificate({ onIssued }: IssueCertificateProps) {
@@ -58,7 +62,9 @@ export function IssueCertificate({ onIssued }: IssueCertificateProps) {
       certificateType: form.certificateType,
       issuerAddress: address,
       gpa: form.gpa ? Number(form.gpa) : undefined,
-      graduationDate: form.graduationDate || undefined,
+      graduationDate: form.graduationDate
+        ? form.graduationDate.toISOString().slice(0, 10)
+        : undefined,
       specialization: form.specialization || undefined,
     };
 
@@ -97,15 +103,17 @@ export function IssueCertificate({ onIssued }: IssueCertificateProps) {
     form.studentAddress &&
     form.certificateType &&
     address
-      ? ContractService.computeCertHashOffchain(
-          form.studentName.trim(),
-          form.certificateType.trim(),
-          form.graduationDate
-            ? new Date(form.graduationDate).getFullYear()
-            : new Date().getFullYear(),
-          Math.round(Number(form.gpa || 0) * 100),
-          form.studentAddress.trim(),
-        )
+      ? ContractService.computeCertificateHashOffchain({
+          studentName: form.studentName.trim(),
+          studentAddress: form.studentAddress.trim(),
+          certificateType: form.certificateType.trim(),
+          specialization: form.specialization.trim() || null,
+          gpa: form.gpa ? Math.round(Number(form.gpa) * 100) : null,
+          graduationDate: form.graduationDate
+            ? form.graduationDate.toISOString().slice(0, 10)
+            : null,
+          issuerAddress: address,
+        })
       : null;
 
   return (
@@ -215,18 +223,37 @@ export function IssueCertificate({ onIssued }: IssueCertificateProps) {
                 </Field>
 
                 <Field>
-                  <Label htmlFor="graduationDate">Ngày tốt nghiệp</Label>
-                  <Input
-                    id="graduationDate"
-                    type="date"
-                    value={form.graduationDate}
-                    onChange={(event) =>
-                      setForm((current) => ({
-                        ...current,
-                        graduationDate: event.target.value,
-                      }))
-                    }
-                  />
+                  <Label>Ngày tốt nghiệp</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className={cn(
+                          "justify-start font-normal",
+                          !form.graduationDate && "text-muted-foreground",
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 size-4" />
+                        {form.graduationDate
+                          ? form.graduationDate.toLocaleDateString("vi-VN")
+                          : "Chọn ngày tốt nghiệp"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={form.graduationDate}
+                        onSelect={(date) =>
+                          setForm((current) => ({
+                            ...current,
+                            graduationDate: date,
+                          }))
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </Field>
               </div>
             </FieldGroup>
