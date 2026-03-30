@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ethers } from "ethers";
-import { ContractService } from "@/lib/contract"; // Đường dẫn đến file contract.ts của bạn
+import { ContractService } from "@/lib/contract";
 import { AdminService } from "@/services/admin.service";
 import { TransactionService } from "@/services/transaction.service";
-const transactionStatus = ["REVERT", "SUCCESS"];
+
 export async function POST(req: NextRequest) {
   try {
     const adminService: AdminService = new AdminService();
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     // 4. Gọi hàm addIssuer trên Smart Contract
     // Hàm này sẽ đợi đến khi giao dịch được xác nhận (receipt)
     const receipt = await service.addIssuer(issuerAddr, name);
-    adminService.addIssuer({
+    await adminService.addIssuer({
       address: issuerAddr,
       isActive: true,
       name: name,
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         universityName: name,
       },
-      status: transactionStatus[receipt.status ?? 0],
+      status: receipt.status === 1 ? "SUCCESS" : "FAILED",
       createdAt: new Date(),
     });
 
