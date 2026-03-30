@@ -31,10 +31,7 @@ export function LoginButton() {
       });
 
       const data = await res.json();
-      if (data.success) {
-        if (data.data.role === "ADMIN") router.replace("/admin/dashboard");
-        else router.replace("/");
-      }
+      if (data.success) router.replace("/");
       router.refresh();
       return toast.success("Xác thực thành công");
     } catch (err) {

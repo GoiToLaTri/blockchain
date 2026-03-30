@@ -7,7 +7,7 @@ export async function verifyToken(token: string) {
     const { payload } = await jwtVerify(token, publicKey);
     return payload;
   } catch (error) {
-    console.error("Token không hợp lệ hoặc đã hết hạn:", error);
+    console.error("Token không hợp lệ hoặc đã hết hạn");
     return null;
   }
 }

@@ -1,12 +1,28 @@
 services:
   nextjs:
-    container_name: nohope-nextjs
+    # container_name: nohope-nextjs
     build:
       context: ./nohope
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000"
     env_file:
       - ./nohope/.env
     environment:
       NODE_ENV: production
+    networks:
+      - blockchain
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - blockchain
+
+networks:
+  blockchain:
+    driver: bridge
+    name: "blockchain"
