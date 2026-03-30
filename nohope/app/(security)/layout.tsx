@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
 
@@ -12,8 +12,17 @@ export default function SecurityLayout({
 }>) {
   const { isConnected, isReconnecting } = useAccount();
   const router = useRouter();
+  const wasConnected = useRef(false);
+
   useEffect(() => {
-    if (!isConnected && !isReconnecting) {
+    if (isConnected) {
+      wasConnected.current = true;
+      return;
+    }
+
+    if (!isConnected && !isReconnecting && wasConnected.current) {
+      wasConnected.current = false;
+
       const id = setTimeout(async () => {
         await fetch("/api/auth/logout", { method: "POST" });
 
