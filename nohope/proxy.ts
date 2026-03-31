@@ -3,7 +3,7 @@ import { verifyToken } from "./lib/token.edge";
 
 const PUBLIC_PATHS = ["/login"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("access_token")?.value;
   // 1. Kiểm tra nếu là Public Path
@@ -19,6 +19,9 @@ export async function middleware(request: NextRequest) {
   if (!decoded) return NextResponse.redirect(new URL("/login", request.url));
   // 3. Phân quyền theo vai trò (Authorization)
   const userRole = decoded.scopes;
+  console.log("Decoded:", decoded);
+  console.log("UserRole:", userRole);
+  console.log("Path:", pathname);
   // Nếu truy cập vào /admin nhưng không phải ADMIN
   if (pathname.startsWith("/admin") && userRole !== "ADMIN")
     return NextResponse.redirect(new URL("/403", request.url)); // Trang từ chối truy cập

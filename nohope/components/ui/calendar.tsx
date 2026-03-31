@@ -33,7 +33,8 @@ function Calendar({
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
-        head_cell: "w-9 rounded-md text-[0.75rem] font-normal text-muted-foreground",
+        head_cell:
+          "w-9 rounded-md text-[0.75rem] font-normal text-muted-foreground",
         row: "mt-2 flex w-full",
         cell: "relative h-9 w-9 p-0 text-center text-sm focus-within:relative focus-within:z-20",
         day: cn(
@@ -43,19 +44,13 @@ function Calendar({
         day_today: "bg-muted text-foreground",
         day_selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_outside: "text-muted-foreground/50 aria-selected:text-muted-foreground/50",
+        day_outside:
+          "text-muted-foreground/50 aria-selected:text-muted-foreground/50",
         day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+        day_range_middle:
+          "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
         ...classNames,
-      }}
-      components={{
-        IconLeft: ({ className, ...iconProps }) => (
-          <ChevronLeftIcon className={cn("size-4", className)} {...iconProps} />
-        ),
-        IconRight: ({ className, ...iconProps }) => (
-          <ChevronRightIcon className={cn("size-4", className)} {...iconProps} />
-        ),
       }}
       {...props}
     />

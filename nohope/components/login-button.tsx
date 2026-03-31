@@ -26,16 +26,34 @@ export function LoginButton() {
       // 3. Gửi lên Server để kiểm tra
       const res = await fetch("/api/auth/verify", {
         method: "POST",
+        credentials: "include",
         body: JSON.stringify({ address, message, signature }),
         headers: { "Content-Type": "application/json" },
       });
 
       const data = await res.json();
-      if (data.success) router.replace("/");
-      router.refresh();
+      console.log(":::: data", data);
+      const role = data.data.role;
+      if (data.success) {
+        switch (role) {
+          case "ADMIN":
+            router.replace("/admin/dashboard");
+            break;
+          case "ISSUER":
+            router.replace("/issuer/dashboard");
+            break;
+          case "STUDENT":
+            router.replace("/");
+            break;
+          default:
+            router.replace("/");
+        }
+      }
+      // router.refresh();
       return toast.success("Xác thực thành công");
     } catch (err) {
       console.error("Lỗi xác thực:", err);
+      return toast.error("Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }

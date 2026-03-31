@@ -11,11 +11,11 @@ export default function SettingsPage() {
     apiAccess: true,
   });
 
-  const handleToggle = (key: string) => {
+  const handleToggle = (key: keyof typeof settings) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleChange = (key: string, value: string) => {
+  const handleChange = (key: keyof typeof settings, value: string) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
