@@ -106,7 +106,8 @@ Truy cập: http://localhost:3000
 ### Docker
 
 ```bash
-docker-compose up -d
+docker compose build 
+docker compose up -d
 ```
 
 Truy cập: http://localhost:8080
