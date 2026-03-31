@@ -13,10 +13,37 @@ import { Lock, Zap, Globe } from "lucide-react";
 
 export default function Home() {
   const [hash, setHash] = useState("");
+  const [loading, setLoading] = useState(false);
   const { isConnected, isConnecting } = useAccount();
   const router = useRouter();
 
   const wasConnected = useRef(false);
+
+  const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+  const handleVerify = async () => {
+    if (!hash.trim()) {
+      toast.error("Vui lòng nhập mã chứng chỉ");
+      return;
+    }
+
+    setLoading(true);
+
+    await toast.promise(
+      async () => {
+        await sleep(800); // delay 0.8s
+
+        await router.push(`certificates/${hash}`);
+      },
+      {
+        loading: "Đang xác minh",
+        success: "Xác minh thành công",
+        error: "Có lỗi xảy ra",
+      },
+    );
+
+    setLoading(false);
+  };
 
   useEffect(() => {
     // Khi đã từng connect
@@ -127,7 +154,9 @@ export default function Home() {
             onChange={(e) => setHash(e.target.value)}
             placeholder="0xabc..."
           />
-          <Button>Xác minh</Button>
+          <Button onClick={handleVerify} disabled={loading}>
+            Xác minh
+          </Button>
         </div>
       </section>
 
