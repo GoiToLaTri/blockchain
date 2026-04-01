@@ -24,4 +24,9 @@ export class UserService {
     await Mongo.connect();
     return await Certificate.findOne({ certHash });
   }
+
+  async countUsers() {
+    await Mongo.connect();
+    return await User.countDocuments();
+  }
 }

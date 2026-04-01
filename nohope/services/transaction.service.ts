@@ -26,4 +26,9 @@ export class TransactionService {
     await Mongo.connect();
     return TransactionHistory.find({ fromAddress });
   }
+
+  async findAll() {
+    await Mongo.connect();
+    return TransactionHistory.find();
+  }
 }

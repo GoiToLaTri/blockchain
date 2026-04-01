@@ -39,9 +39,9 @@ export default function SettingsPage() {
         {/* Theme Setting */}
         <div className="flex justify-between items-center border-b pb-4">
           <div>
-            <h2 className="text-lg font-semibold">Theme</h2>
+            <h2 className="text-lg font-semibold">Giao diện</h2>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Choose your preferred theme
+              Chọn giao diện yêu thích của bạn
             </p>
           </div>
           <select
@@ -49,18 +49,18 @@ export default function SettingsPage() {
             onChange={(e) => handleChange("theme", e.target.value)}
             className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
           >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="auto">Auto</option>
+            <option value="light">Sáng</option>
+            <option value="dark">Tối</option>
+            <option value="auto">Hệ thống</option>
           </select>
         </div>
 
         {/* Notifications */}
         <div className="flex justify-between items-center border-b pb-4">
           <div>
-            <h2 className="text-lg font-semibold">Notifications</h2>
+            <h2 className="text-lg font-semibold">Thông báo</h2>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Receive system notifications
+              Nhận thông báo hệ thống
             </p>
           </div>
           <button
@@ -80,9 +80,9 @@ export default function SettingsPage() {
         {/* Two-Factor Authentication */}
         <div className="flex justify-between items-center border-b pb-4">
           <div>
-            <h2 className="text-lg font-semibold">Two-Factor Authentication</h2>
+            <h2 className="text-lg font-semibold">Xác thực 2 yếu tố</h2>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Enhance account security
+              Tăng cường bảo mật tài khoản
             </p>
           </div>
           <button
@@ -102,9 +102,9 @@ export default function SettingsPage() {
         {/* API Access */}
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-lg font-semibold">API Access</h2>
+            <h2 className="text-lg font-semibold">Truy cập API</h2>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Allow external API calls
+              Chấp nhận gọi API
             </p>
           </div>
           <button
@@ -124,10 +124,10 @@ export default function SettingsPage() {
         {/* Save Button */}
         <div className="flex gap-4 pt-6">
           <button className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-            Save Changes
+            Lưu thay đổi
           </button>
           <button className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-            Cancel
+            Hủy
           </button>
         </div>
       </div>

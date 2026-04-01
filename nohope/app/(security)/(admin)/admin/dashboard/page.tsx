@@ -1,6 +1,48 @@
+"use client";
+
 import CustomConnectButton from "@/components/custom-connect-button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+  Table,
+} from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { ExternalLink } from "lucide-react";
+import { useEffect } from "react";
 
 export default function AdminDashboard() {
+  const findAllTrans = async () => {
+    const res = await fetch("/api/trans", {
+      cache: "no-store",
+      method: "GET",
+    });
+    if (!res.ok) throw new Error("Lỗi khi lấy dữ liệu");
+    return res.json();
+  };
+
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["trans"],
+    queryFn: findAllTrans,
+  });
+
+  useEffect(() => {
+    (async () => await refetch())();
+  }, [refetch]);
+
+  const transactions = data?.trans || [];
+
   return (
     <div className="p-8 max-w-6xl w-full mx-auto space-y-8">
       {/* Header Section */}
@@ -22,17 +64,25 @@ export default function AdminDashboard() {
         {/* Stats Cards */}
         <div className="bg-card border rounded-lg p-6 space-y-2">
           <p className="text-sm text-muted-foreground">Tổng người dùng</p>
-          <h3 className="text-2xl font-bold">1,234</h3>
+          <h3 className="text-2xl font-bold">{data?.numberOfUsers ?? 0}</h3>
           <p className="text-xs text-green-600">+12% từ tháng trước</p>
         </div>
         <div className="bg-card border rounded-lg p-6 space-y-2">
           <p className="text-sm text-muted-foreground">Giao dịch</p>
-          <h3 className="text-2xl font-bold">5,678</h3>
+          <h3 className="text-2xl font-bold">{transactions.length ?? 0}</h3>
           <p className="text-xs text-green-600">+8% từ tháng trước</p>
         </div>
         <div className="bg-card border rounded-lg p-6 space-y-2">
           <p className="text-sm text-muted-foreground">Tổng giá trị</p>
-          <h3 className="text-2xl font-bold">$45.2K</h3>
+          <h3 className="text-2xl font-bold">
+            {transactions
+              ?.reduce(
+                (total: number, tx: { gasUsed: string | number }) =>
+                  total + Number(tx.gasUsed),
+                0,
+              )
+              .toLocaleString()}
+          </h3>
           <p className="text-xs text-green-600">+5% từ tháng trước</p>
         </div>
         <div className="bg-card border rounded-lg p-6 space-y-2">
@@ -43,40 +93,103 @@ export default function AdminDashboard() {
       </div>
 
       {/* Activity Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-card border rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4">Hoạt động gần đây</h2>
-          <div className="space-y-4">
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="flex items-center justify-between border-b pb-3"
-              >
-                <div>
-                  <p className="font-medium">Giao dịch #{1000 + item}</p>
-                  <p className="text-sm text-muted-foreground">2 giờ trước</p>
-                </div>
-                <span className="text-green-600 font-semibold">+$500</span>
-              </div>
-            ))}
+      <Card className="md:col-span-2 shadow-md">
+        <CardHeader>
+          <div>
+            <CardTitle>Hoạt động hệ thống</CardTitle>
+            <CardDescription>
+              Lịch sử các giao dịch trên blockchain
+            </CardDescription>
           </div>
-        </div>
-        <div className="bg-card border rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4">Thống kê nhanh</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Người dùng hoạt động</span>
-              <span className="font-bold">892</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2"></div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Tỷ lệ hoạt động</span>
-              <span className="font-bold">72%</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2"></div>
-          </div>
-        </div>
-      </div>
+        </CardHeader>
+
+        <CardContent>
+          {isLoading && (
+            <p className="text-sm text-muted-foreground">Đang lấy dữ liệu...</p>
+          )}
+
+          {error && <p className="text-sm text-red-500">Lỗi khi lấy dữ liệu</p>}
+
+          {!isLoading && !error && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Hành động</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead>Gas</TableHead>
+                  <TableHead>Thời gian</TableHead>
+                  <TableHead>Địa chỉ</TableHead>
+                  <TableHead className="text-right">Tx</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {transactions?.map(
+                  (tx: {
+                    _id: string;
+                    action: string;
+                    status: string;
+                    gasUsed: string;
+                    createdAt: string;
+                    targetAddress: string;
+                    txHash: string;
+                  }) => (
+                    <TableRow key={tx._id}>
+                      {/* Action */}
+                      <TableCell className="font-medium">{tx.action}</TableCell>
+
+                      {/* Status */}
+                      <TableCell>
+                        <Badge
+                          variant={
+                            tx.status === "SUCCESS"
+                              ? "secondary"
+                              : "destructive"
+                          }
+                        >
+                          {tx.status === "SUCCESS" ? "Thành công" : "Thất bại"}
+                        </Badge>
+                      </TableCell>
+
+                      {/* Time */}
+                      <TableCell className="text-muted-foreground">
+                        {tx.gasUsed}
+                      </TableCell>
+
+                      {/* Time */}
+                      <TableCell className="text-muted-foreground">
+                        {new Date(tx.createdAt).toLocaleString()}
+                      </TableCell>
+
+                      {/* Address */}
+                      <TableCell className="font-mono text-xs">
+                        {tx.targetAddress?.slice(0, 6)}...
+                        {tx.targetAddress?.slice(-4)}
+                      </TableCell>
+
+                      {/* Tx */}
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            window.open(
+                              `https://hoodi.etherscan.io//tx/${tx.txHash}`,
+                              "_blank",
+                            )
+                          }
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ),
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
