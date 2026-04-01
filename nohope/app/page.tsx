@@ -203,9 +203,7 @@ export default function Home() {
                 <ShieldCheck className="mr-2 size-4" />
                 Xác minh ngay
               </Button>
-              <p className="text-xs leading-6 text-zinc-500">
-                Kết quả sẽ mở tại <span className="font-mono text-zinc-700">/certificates/[certHash]</span>.
-              </p>
+              
             </CardContent>
           </Card>
 
