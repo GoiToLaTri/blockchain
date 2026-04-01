@@ -5,5 +5,5 @@ export default function StudentLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div>StudentLayout {children}</div>;
+  return <div>{children}</div>;
 }

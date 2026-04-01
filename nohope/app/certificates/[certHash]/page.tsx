@@ -47,6 +47,13 @@ function formatDate(value?: string | null) {
   });
 }
 
+function formatGpa(value?: number | null) {
+  if (value === undefined || value === null) return "Không có";
+
+  const normalizedValue = value > 10 ? value / 100 : value;
+  return normalizedValue.toFixed(2).replace(/\.00$/, "");
+}
+
 export default async function CertificatesVerifyPage({
   params,
 }: {
@@ -187,7 +194,7 @@ export default async function CertificatesVerifyPage({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Điểm trung bình</p>
-              <p className="font-medium">{certificate.gpa ?? "Không có"}</p>
+              <p className="font-medium">{formatGpa(certificate.gpa)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Ngày tốt nghiệp</p>
@@ -250,7 +257,7 @@ export default async function CertificatesVerifyPage({
               </div>
             ) : (
               <div className="rounded-xl border border-secondary/30 bg-secondary/5 p-4">
-                <p className="text-sm text-secondary font-semibold">
+                <p className="text-sm text-success font-semibold">
                   Chứng chỉ đang hợp lệ
                 </p>
               </div>
