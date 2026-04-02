@@ -19,9 +19,6 @@ export async function proxy(request: NextRequest) {
   if (!decoded) return NextResponse.redirect(new URL("/login", request.url));
   // 3. Phân quyền theo vai trò (Authorization)
   const userRole = decoded.scopes;
-  console.log("Decoded:", decoded);
-  console.log("UserRole:", userRole);
-  console.log("Path:", pathname);
   // Nếu truy cập vào /admin nhưng không phải ADMIN
   if (pathname.startsWith("/admin") && userRole !== "ADMIN")
     return NextResponse.redirect(new URL("/403", request.url)); // Trang từ chối truy cập

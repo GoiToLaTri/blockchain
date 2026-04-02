@@ -32,7 +32,6 @@ export function LoginButton() {
       });
 
       const data = await res.json();
-      console.log(":::: data", data);
       const role = data.data.role;
       if (data.success) {
         switch (role) {
@@ -49,7 +48,7 @@ export function LoginButton() {
             router.replace("/");
         }
       }
-      // router.refresh();
+      router.refresh();
       return toast.success("Xác thực thành công");
     } catch (err) {
       console.error("Lỗi xác thực:", err);
