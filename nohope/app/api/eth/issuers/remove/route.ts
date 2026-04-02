@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const adminService: AdminService = new AdminService();
     const transactionService: TransactionService = new TransactionService();
     // 1. Lấy dữ liệu từ body request
-    const { issuerAddr } = await req.json();
+    const { issuerAddr, message, signature, address } = await req.json();
     // Kiểm tra dữ liệu đầu vào cơ bản
     if (!issuerAddr)
       return NextResponse.json(
@@ -23,6 +23,15 @@ export async function POST(req: NextRequest) {
         { error: "Địa chỉ ví không hợp lệ" },
         { status: 400 },
       );
+
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+
+    if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
+      return NextResponse.json(
+        { success: false, message: "Chữ ký không hợp lệ" },
+        { status: 401 },
+      );
+    }
 
     // 2. Thiết lập Admin Signer từ Private Key (Server-side)
     // Lưu ý: Việc thêm Issuer chỉ Admin mới làm được, nên ta dùng key của Admin

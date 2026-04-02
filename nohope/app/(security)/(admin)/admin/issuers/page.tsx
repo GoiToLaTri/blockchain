@@ -23,9 +23,14 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { ExternalLink, UsersRound } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAccount, useSignMessage } from "wagmi";
 
 export default function IssuersPage() {
   const [loading, setLoading] = useState(false);
+  const { address } = useAccount();
+  const { signMessageAsync } = useSignMessage();
+  const [issuerAddr, setIssuerAddr] = useState<string>("");
+
   const fetchIssuers = async () => {
     const res = await fetch("/api/eth/issuers/all", {
       cache: "no-store",
@@ -42,23 +47,30 @@ export default function IssuersPage() {
   const removeIssuerMutation = useMutation({
     mutationFn: async (issuerAddr: string) => {
       setLoading(true);
+      setIssuerAddr(issuerAddr);
+      const message = `Xác thực khóa tổ chức cấp bằng. Mã xác thực của bạn là: ${Date.now()}`;
+      const signature = await signMessageAsync({ message });
 
       const res = await fetch("/api/eth/issuers/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ issuerAddr }),
+        body: JSON.stringify({ issuerAddr, message, signature, address }),
       });
+
       if (!res.ok) throw new Error("Remove failed");
       setLoading(false);
 
       return res.json();
     },
+
     onSuccess: () => {
       toast.success("Khóa thành công");
+      setIssuerAddr("");
       refetch();
     },
     onError: () => {
       toast.error("Có lỗi xảy ra");
+      setIssuerAddr("");
     },
   });
 
@@ -164,7 +176,9 @@ export default function IssuersPage() {
                           disabled={!issuer.isActive}
                           variant="destructive"
                         >
-                          Khóa
+                          {loading && issuerAddr === issuer.address
+                            ? "Đang xử lý..."
+                            : "Khóa"}
                         </Button>
                       </TableCell>
                     </TableRow>
