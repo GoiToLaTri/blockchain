@@ -12,12 +12,24 @@ export async function POST(req: NextRequest) {
       gpa,
       graduationDate,
       specialization,
+      message,
+      signature,
+      address
     } = await req.json();
 
     if (!studentAddress || !studentName || !certificateType || !issuerAddress) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
+      );
+    }
+
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+
+    if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
+      return NextResponse.json(
+        { success: false, message: "Chữ ký không hợp lệ" },
+        { status: 401 },
       );
     }
 

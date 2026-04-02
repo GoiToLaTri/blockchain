@@ -4,12 +4,21 @@ import { IssuerService } from "@/services/issuer.service";
 
 export async function POST(req: NextRequest) {
   try {
-    const { certHash, issuerAddress } = await req.json();
+    const { certHash, issuerAddress, message, signature, address } = await req.json();
 
     if (!certHash || !issuerAddress) {
       return NextResponse.json(
         { error: "Missing required fields: certHash, issuerAddress" },
         { status: 400 },
+      );
+    }
+
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+
+    if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
+      return NextResponse.json(
+        { success: false, message: "Chữ ký không hợp lệ" },
+        { status: 401 },
       );
     }
 

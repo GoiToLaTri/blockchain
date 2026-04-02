@@ -18,6 +18,7 @@ import {
   TableCell,
   Table,
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
 import {
   Layers,
   ArrowUpRight,
@@ -32,6 +33,7 @@ export default function ProfilePage() {
   const { isConnected, address } = useAccount();
   const { data } = useBalance({ address });
   const [ethPrice, setEthPrice] = useState<number>(0);
+
   useEffect(() => {
     (async () => {
       const res = await fetch("/api/eth/price");
@@ -39,6 +41,27 @@ export default function ProfilePage() {
       setEthPrice(price.ethereum?.usd || 0);
     })();
   }, []);
+
+  const {
+    data: transactions,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["transactions_by_address", address],
+    enabled: !!address,
+    queryFn: async () => {
+      const res = await fetch(`/api/trans/${address}`, { method: "GET" });
+      if (!res.ok) throw new Error("Lỗi khi lấy dữ liệu");
+      return res.json();
+    },
+  });
+
+  useEffect(() => {
+    (async () => await refetch())();
+  }, [refetch]);
+
+  const trans = transactions?.trans || [];
 
   if (!isConnected) return <p>Vui lòng kết nối ví</p>;
 
@@ -114,46 +137,69 @@ export default function ProfilePage() {
             </Button>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Loại</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Thời gian</TableHead>
-                  <TableHead className="text-right">Giá trị</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell className="font-medium flex items-center gap-2">
-                    <ArrowDownLeft className="w-4 h-4 text-green-500" /> Nhận
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">Thành công</Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    2 giờ trước
-                  </TableCell>
-                  <TableCell className="text-right font-mono">
-                    +0.5 ETH
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4 text-blue-500" /> Mint NFT
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">Thành công</Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    1 ngày trước
-                  </TableCell>
-                  <TableCell className="text-right font-mono">
-                    -0.02 ETH
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            {isLoading && "Đang tải giao dịch..."}
+            {error && "Lỗi khi tải giao dịch"}
+            {!isLoading && !error && trans.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Không có giao dịch nào.
+              </p>
+            )}
+            {!isLoading && !error && trans.length > 0 && (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Loại</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>Thời gian</TableHead>
+                    <TableHead className="text-right">Phí Gas</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {trans.map(
+                    (tx: {
+                      _id: string;
+                      type: string;
+                      status: string;
+                      createdAt: string;
+                      gasUsed: string;
+                      gasFeeEth?: string;
+                    }) => (
+                      <TableRow key={tx._id}>
+                        <TableCell className="font-medium flex items-center gap-2">
+                          {tx.type === "receive" ? (
+                            <ArrowDownLeft className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <ExternalLink className="w-4 h-4 text-blue-500" />
+                          )}
+                          {tx.type === "receive" ? "Nhận" : "Gửi"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              tx.status === "SUCCESS"
+                                ? "secondary"
+                                : "destructive"
+                            }
+                          >
+                            {tx.status === "SUCCESS"
+                              ? "Thành công"
+                              : "Thất bại"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          <span suppressHydrationWarning>
+                            {new Date(tx.createdAt).toLocaleString()}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {tx.gasFeeEth ? `${tx.gasFeeEth} ETH` : tx.gasUsed}
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>

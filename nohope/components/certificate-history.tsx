@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { History, Search, ShieldCheck } from "lucide-react";
+import { useAccount, useSignMessage } from "wagmi";
 
 type CertificateRecord = {
   _id: string;
@@ -47,6 +48,9 @@ export function CertificateHistory({
   const queryClient = useQueryClient();
   const [skip, setSkip] = useState(0);
   const [keyword, setKeyword] = useState("");
+  const { signMessageAsync } = useSignMessage();
+  const { address } = useAccount();
+
 
   const historyQuery = useQuery({
     queryKey: ["issuer-history", issuerAddress, skip, keyword],
@@ -74,12 +78,20 @@ export function CertificateHistory({
     },
   });
 
+  
+
   const revokeMutation = useMutation({
     mutationFn: async (certHash: string) => {
+
+      // 1. Giả sử lấy nonce từ API (hoặc tạo tạm thời để test)
+      const message = `Xác thực thêm thu hồi chứng chỉ. Mã xác thực của bạn là: ${Date.now()}`;
+
+      // 2. Yêu cầu MetaMask ký
+      const signature = await signMessageAsync({ message });
       const response = await fetch("/api/eth/certificates/revoke", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ certHash, issuerAddress }),
+        body: JSON.stringify({ certHash, issuerAddress, message, signature, address }),
       });
 
       const data = await response.json();

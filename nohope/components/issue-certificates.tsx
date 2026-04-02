@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSignMessage } from "wagmi";
 
 type IssueCertificateProps = {
   onIssued?: () => void;
@@ -50,6 +51,9 @@ export function IssueCertificate({ onIssued }: IssueCertificateProps) {
   const { address, isConnected } = useAccount();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<IssueFormState>(initialFormState);
+  const {signMessageAsync} = useSignMessage();
+
+  
 
   const issueCertificate = async () => {
     if (!address) {
@@ -68,10 +72,16 @@ export function IssueCertificate({ onIssued }: IssueCertificateProps) {
       specialization: form.specialization || undefined,
     };
 
+      // 1. Giả sử lấy nonce từ API (hoặc tạo tạm thời để test)
+    const message = `Xác thực phát hành chứng chỉ. Mã xác thực của bạn là: ${Date.now()}`;
+
+    // 2. Yêu cầu MetaMask ký
+    const signature = await signMessageAsync({ message });
+
     const res = await fetch("/api/eth/certificates/issue", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, message, signature,  address }),
     });
 
     const result = await res.json();
