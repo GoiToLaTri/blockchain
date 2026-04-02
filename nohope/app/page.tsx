@@ -6,10 +6,22 @@ import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import CustomConnectButton from "@/components/custom-connect-button";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowRight, GraduationCap, Search, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  GraduationCap,
+  Search,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 
 export default function Home() {
   const [hash, setHash] = useState("");
@@ -21,7 +33,8 @@ export default function Home() {
 
   const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-  const isCertificateHash = (value: string) => /^0x[a-fA-F0-9]{64}$/.test(value);
+  const isCertificateHash = (value: string) =>
+    /^0x[a-fA-F0-9]{64}$/.test(value);
 
   const handleVerify = async () => {
     const value = hash.trim();
@@ -82,8 +95,12 @@ export default function Home() {
       <nav className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">NoHope</p>
-            <h1 className="text-lg font-semibold tracking-tight">Certificate vault</h1>
+            <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">
+              NoHope
+            </p>
+            <h1 className="text-lg font-semibold tracking-tight">
+              Certificate vault
+            </h1>
           </div>
 
           <div className="hidden items-center gap-2 md:flex">
@@ -109,18 +126,30 @@ export default function Home() {
                 </div>
                 <div className="space-y-4">
                   <h2 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-                    Tra cứu và xác thực chứng chỉ trên blockchain với dữ liệu minh bạch.
+                    Tra cứu và xác thực chứng chỉ trên blockchain với dữ liệu
+                    minh bạch.
                   </h2>
                   <p className="max-w-2xl text-sm leading-7 text-zinc-300 sm:text-base">
-                    Hệ thống lưu trữ thông tin chứng chỉ trên blockchain để đảm bảo
-                    khả năng đối chiếu, truy xuất và xác thực kết quả một cách nhất quán.
+                    Hệ thống lưu trữ thông tin chứng chỉ trên blockchain để đảm
+                    bảo khả năng đối chiếu, truy xuất và xác thực kết quả một
+                    cách nhất quán.
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-wrap">
-                <Button asChild size="lg" className="bg-white text-zinc-950 hover:bg-white/50!">
-                  <Link href={isConnected && !isConnecting ? "/student/certificates" : "/login"}>
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-white text-zinc-950 hover:bg-white/50!"
+                >
+                  <Link
+                    href={
+                      isConnected && !isConnecting
+                        ? "/student/certificates"
+                        : "/login"
+                    }
+                  >
                     Truy cập kho chứng chỉ
                     <ArrowRight className="ml-2 size-4" />
                   </Link>
@@ -166,9 +195,13 @@ export default function Home() {
             <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium text-zinc-950">Trạng thái ví</p>
+                  <p className="text-sm font-medium text-zinc-950">
+                    Trạng thái ví
+                  </p>
                   <p className="text-sm text-zinc-500">
-                    {isConnected && !isConnecting ? "Đã sẵn sàng sử dụng" : "Chưa kết nối"}
+                    {isConnected && !isConnecting
+                      ? "Đã sẵn sàng sử dụng"
+                      : "Chưa kết nối"}
                   </p>
                 </div>
                 <div className="text-xs uppercase tracking-[0.2em] text-zinc-400">
@@ -182,7 +215,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="verify" className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <section
+          id="verify"
+          className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]"
+        >
           <Card className="border-zinc-200 bg-white shadow-sm">
             <CardHeader className="border-b border-zinc-100 pb-4">
               <CardTitle className="flex items-center gap-2 text-zinc-950">
@@ -199,30 +235,51 @@ export default function Home() {
                 placeholder="0x... (64 ký tự hex)"
                 className="border-zinc-200 bg-white"
               />
-              <Button onClick={handleVerify} disabled={loading} className="w-full bg-zinc-950 text-white hover:bg-zinc-800">
+              <Button
+                onClick={handleVerify}
+                disabled={loading}
+                className="w-full bg-zinc-950 text-white hover:bg-zinc-800"
+              >
                 <ShieldCheck className="mr-2 size-4" />
                 Xác minh ngay
               </Button>
-              
             </CardContent>
           </Card>
 
           <div className="rounded-[1.75rem] border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Bằng của tôi</p>
-                <p className="mt-2 text-sm font-medium text-zinc-950">Vault dành cho sinh viên</p>
-                <p className="mt-1 text-sm text-zinc-500">Xem danh sách chứng chỉ và trạng thái hiệu lực.</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+                  Bằng của tôi
+                </p>
+                <p className="mt-2 text-sm font-medium text-zinc-950">
+                  Vault dành cho sinh viên
+                </p>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Xem danh sách chứng chỉ và trạng thái hiệu lực.
+                </p>
               </div>
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Xác minh</p>
-                <p className="mt-2 text-sm font-medium text-zinc-950">Tra cứu tức thì</p>
-                <p className="mt-1 text-sm text-zinc-500">Chuyển đến trang chi tiết bằng hash hợp lệ.</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+                  Xác minh
+                </p>
+                <p className="mt-2 text-sm font-medium text-zinc-950">
+                  Tra cứu tức thì
+                </p>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Chuyển đến trang chi tiết bằng hash hợp lệ.
+                </p>
               </div>
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Dấu vết</p>
-                <p className="mt-2 text-sm font-medium text-zinc-950">Minh bạch và nhất quán</p>
-                <p className="mt-1 text-sm text-zinc-500">Theo dõi phát hành và thu hồi trong cùng một luồng.</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+                  Dấu vết
+                </p>
+                <p className="mt-2 text-sm font-medium text-zinc-950">
+                  Minh bạch và nhất quán
+                </p>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Theo dõi phát hành và thu hồi trong cùng một luồng.
+                </p>
               </div>
             </div>
           </div>

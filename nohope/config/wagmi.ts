@@ -1,6 +1,6 @@
 // config/wagmi.ts
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { mainnet, polygon, sepolia } from "wagmi/chains";
+import { flare, flareTestnet, mainnet, polygon, sepolia } from "wagmi/chains";
 
 const ethereumHoodi = {
   id: 560048, // Thay bằng Chain ID thực tế của Hoodi
@@ -15,6 +15,6 @@ export const config = getDefaultConfig({
   appName: "My Next.js Web3 App",
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID!, // Lấy tại cloud.walletconnect.com
 
-  chains: [mainnet, polygon, sepolia, ethereumHoodi],
+  chains: [flareTestnet],
   // ssr: true, // Bật chế độ Server Side Rendering cho Next.js
 });
