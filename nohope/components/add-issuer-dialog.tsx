@@ -17,20 +17,29 @@ import { Label } from "@/components/ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAccount, useSignMessage } from "wagmi";
 
 export function AddIssuerDialog({ refetch }: { refetch: () => void }) {
   const queryClient = useQueryClient();
+  const { signMessageAsync } = useSignMessage();
   const [loading, setLoading] = useState(false);
-
+  const { address } = useAccount();
   const addIssuer = async (data: {
     issuerAddr: FormDataEntryValue | null;
     name: FormDataEntryValue | null;
   }) => {
     setLoading(true);
+
+    // 1. Giả sử lấy nonce từ API (hoặc tạo tạm thời để test)
+    const message = `Xác thực thêm tổ chức cấp bằng. Mã xác thực của bạn là: ${Date.now()}`;
+
+    // 2. Yêu cầu MetaMask ký
+    const signature = await signMessageAsync({ message });
+
     const res = await fetch("/api/eth/issuers/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, message, signature, address }),
     });
     const result = await res.json();
     if (!res.ok) throw new Error(result?.error || "Add issuer failed");

@@ -18,6 +18,7 @@ export async function POST(req: Request) {
         { status: 401 },
       );
     }
+    
     const admin = await contract.getInstance().admin();
     const isAdmin: boolean =
       admin.toLowerCase() === recoveredAddress.toLowerCase();
