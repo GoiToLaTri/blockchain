@@ -24,8 +24,8 @@ export async function GET(
         }
 
         const receipt = await provider.getTransactionReceipt(transaction.txHash);
-        const gasPrice = receipt?.gasPrice ?? receipt?.effectiveGasPrice ?? 0n;
-        const gasFeeWei = receipt ? receipt.gasUsed * gasPrice : 0n;
+        const gasPrice = receipt?.gasPrice ?? BigInt(0);
+        const gasFeeWei = receipt ? receipt.gasUsed * gasPrice : BigInt(0);
 
         return {
           ...transaction.toObject(),
